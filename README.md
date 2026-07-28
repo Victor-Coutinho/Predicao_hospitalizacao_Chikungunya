@@ -1,8 +1,8 @@
-# Predição de hospitalização em casos de chikungunya
+# Predição de Hospitalização em Casos de Chikungunya
 
 Projeto de aprendizado de máquina desenvolvido com dados públicos do Sistema de Informação de Agravos de Notificação (SINAN), disponibilizados pelo Ministério da Saúde.
 
-O objetivo é comparar diferentes modelos de classificação para prever se um paciente com chikungunya será hospitalizado ou não, utilizando informações demográficas, sintomas iniciais e comorbidades registradas na notificação.
+O objetivo é comparar modelos de classificação para prever se um paciente com chikungunya será hospitalizado ou não, usando informações demográficas, sintomas iniciais e comorbidades registradas na notificação.
 
 ## Objetivo
 
@@ -13,48 +13,58 @@ A variável-alvo é representada da seguinte forma:
 - `0`: paciente não hospitalizado;
 - `1`: paciente hospitalizado.
 
-## Fonte dos dados
+## Fonte dos Dados
 
-Os dados utilizados pertencem ao conjunto de casos de febre de chikungunya registrados no SINAN em 2024.
+Os dados utilizados pertencem aos conjuntos de febre de chikungunya registrados no SINAN, com foco principal no arquivo de 2024.
 
-O arquivo pode ser obtido no Portal de Dados Abertos do SUS:
+Os arquivos podem ser obtidos no Portal de Dados Abertos do SUS:
 
-[Sinan — Febre de Chikungunya](https://dadosabertos.saude.gov.br/dataset/arboviroses-febre-de-chikungunya)
+[SINAN - Febre de Chikungunya](https://dadosabertos.saude.gov.br/dataset/arboviroses-febre-de-chikungunya)
 
-Após o download, o arquivo compactado deve ser extraído e renomeado, caso necessário, para:
-
-```text
-CHIKBR24.csv
-```
-
-## Estrutura do projeto
-
-Para executar o notebook sem alterar os caminhos, organize os arquivos da seguinte forma:
+O repositório mantém os arquivos compactados menores em `data/raw/`. O CSV bruto de 2024, `data/csv/CHIKBR24.csv`, não é versionado porque ultrapassa o limite de tamanho do GitHub. Para executar o notebook desde o pré-processamento, extraia o arquivo `CHIKBR24.csv` localmente para:
 
 ```text
-projeto_chikungunya/
-│
-├── TIC_chikungunya_mesmo_padrao.ipynb
-└── CHIKBR24.csv
+data/csv/CHIKBR24.csv
 ```
 
-Durante a execução, o notebook gera os seguintes arquivos:
+## Estrutura do Projeto
+
+Estrutura atual do repositório:
 
 ```text
-projeto_chikungunya/
-│
-├── TIC_chikungunya_mesmo_padrao.ipynb
-├── CHIKBR24.csv
-├── CHIKBR24_processado.csv
-├── arvore_decisao_chikungunya.png
-└── curva_roc_modelos_chikungunya.png
+chikungunya_hospitalizacao/
+├── .gitignore
+├── README.md
+├── predicao_chikungunya.ipynb
+├── data/
+│   ├── csv/
+│   │   └── CHIKBR24_processado.csv
+│   └── raw/
+│       ├── CHIKBR22.csv.zip
+│       ├── CHIKBR23.csv.zip
+│       └── CHIKBR24.csv.zip
+├── dicionario/
+│   └── dic_dados_chikungunya.pdf
+└── figuras/
+    ├── arvore_decisao_chikungunya.png
+    └── curva_roc_modelos_chikungunya.png
 ```
 
-## Variáveis utilizadas
+Arquivos locais necessários ou gerados durante a execução:
+
+```text
+chikungunya_hospitalizacao/
+└── data/
+    └── csv/
+        ├── CHIKBR24.csv              # arquivo bruto local, ignorado pelo Git
+        └── CHIKBR24_processado.csv   # base processada usada na modelagem
+```
+
+## Variáveis Utilizadas
 
 O projeto utiliza informações disponíveis na ficha de notificação de chikungunya.
 
-### Características demográficas
+### Características Demográficas
 
 - sexo;
 - gestação;
@@ -92,9 +102,9 @@ A idade é estimada pela diferença entre o ano da notificação e o ano de nasc
 - doença ácido-péptica;
 - doenças autoimunes.
 
-## Pré-processamento
+## Pré-Processamento
 
-O arquivo é processado em blocos de 100 mil registros para reduzir o consumo de memória.
+O arquivo bruto é processado em blocos de 100 mil registros para reduzir o consumo de memória.
 
 Durante essa etapa, são aplicados os seguintes procedimentos:
 
@@ -108,13 +118,13 @@ Durante essa etapa, são aplicados os seguintes procedimentos:
 8. Criação das variáveis de sexo, gestação e idade.
 9. Criação da variável-alvo de hospitalização.
 
-Ao final do processamento, é criado o arquivo:
+Ao final do processamento, é criado ou atualizado o arquivo:
 
 ```text
-CHIKBR24_processado.csv
+data/csv/CHIKBR24_processado.csv
 ```
 
-## Divisão dos dados
+## Divisão dos Dados
 
 Os dados são divididos em:
 
@@ -123,9 +133,9 @@ Os dados são divididos em:
 
 A divisão utiliza estratificação para preservar a proporção entre pacientes hospitalizados e não hospitalizados.
 
-A variável `IDADE` é normalizada entre 0 e 1 somente para a regressão logística.
+A variável `IDADE` é normalizada entre 0 e 1 somente para a Regressão Logística.
 
-## Modelos utilizados
+## Modelos Utilizados
 
 São comparados quatro algoritmos de classificação:
 
@@ -138,13 +148,13 @@ Para cada modelo, é utilizado o `RandomizedSearchCV` para testar diferentes com
 
 A escolha da melhor combinação é realizada com base no `recall`, pois o objetivo é reduzir a quantidade de pacientes hospitalizados classificados incorretamente como não hospitalizados.
 
-## Tratamento do desbalanceamento
+## Tratamento do Desbalanceamento
 
 Como a quantidade de pacientes hospitalizados tende a ser menor, o projeto utiliza pesos diferentes para as classes durante o treinamento.
 
 Essa estratégia permite aumentar a importância da classe minoritária sem criar ou remover registros do conjunto de dados.
 
-## Métricas de avaliação
+## Métricas de Avaliação
 
 Os modelos são avaliados utilizando:
 
@@ -153,21 +163,10 @@ Os modelos são avaliados utilizando:
 - recall;
 - F1-score;
 - matriz de confusão;
-- Curva ROC;
-- área sob a Curva ROC.
+- curva ROC;
+- área sob a curva ROC.
 
 A classe de maior interesse é a classe `1`, que representa os pacientes hospitalizados.
-
-## Matriz de confusão
-
-A matriz de confusão permite identificar:
-
-- verdadeiros negativos: pacientes não hospitalizados classificados corretamente;
-- falsos positivos: pacientes não hospitalizados classificados como hospitalizados;
-- falsos negativos: pacientes hospitalizados classificados como não hospitalizados;
-- verdadeiros positivos: pacientes hospitalizados classificados corretamente.
-
-No contexto do projeto, os falsos negativos recebem maior atenção, pois representam pacientes hospitalizados que não foram identificados pelo modelo.
 
 ## Explicabilidade
 
@@ -178,9 +177,19 @@ A importância das variáveis é analisada de diferentes formas:
 - importância das variáveis na Floresta Aleatória;
 - importância das variáveis no XGBoost.
 
-Também é gerada uma representação gráfica da melhor Árvore de Decisão.
+Também é gerada uma representação gráfica da melhor Árvore de Decisão em:
 
-## Tecnologias utilizadas
+```text
+figuras/arvore_decisao_chikungunya.png
+```
+
+A curva ROC comparando os modelos é salva em:
+
+```text
+figuras/curva_roc_modelos_chikungunya.png
+```
+
+## Tecnologias Utilizadas
 
 - Python;
 - Pandas;
@@ -207,13 +216,15 @@ Na pasta do projeto, execute:
 jupyter notebook
 ```
 
-Depois, abra o arquivo:
+Depois, abra o notebook:
 
 ```text
-TIC_chikungunya_mesmo_padrao.ipynb
+predicao_chikungunya.ipynb
 ```
 
 Execute as células em ordem.
+
+Para rodar o fluxo completo desde os dados brutos, confirme antes se o arquivo `data/csv/CHIKBR24.csv` existe localmente. Se quiser usar apenas a base já processada, utilize `data/csv/CHIKBR24_processado.csv`.
 
 ## Resultados
 
@@ -221,11 +232,10 @@ Após a execução, os resultados dos modelos podem ser organizados na seguinte 
 
 | Modelo | Precisão | Sensibilidade |
 | :--- | :---: | :---: |
-| Regressão logística | 5,73% | 75,34% |
-| Árvore de decisão | 4,90% | 82,60% |
-| Floresta aleatória | 6,22% | 75,09% |
+| Regressão Logística | 5,73% | 75,34% |
+| Árvore de Decisão | 4,90% | 82,60% |
+| Floresta Aleatória | 6,22% | 75,09% |
 | XGBoost | 4,62% | 90,99% |
-
 
 ## Limitações
 
@@ -239,7 +249,7 @@ A hospitalização não depende exclusivamente da condição clínica do pacient
 
 Além disso, o projeto utiliza dados administrativos, que podem apresentar informações ausentes, erros de preenchimento e diferenças na forma de registro.
 
-## Uso responsável
+## Uso Responsável
 
 Este projeto possui finalidade acadêmica e de aprendizado.
 
